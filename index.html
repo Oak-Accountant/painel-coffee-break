@@ -146,8 +146,13 @@ button { font: inherit; cursor: pointer; }
 .prazo.fim { text-decoration: line-through; }
 .quando { font-size: 0.85rem; color: var(--tinta-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .docs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-top: 1px dashed var(--linha); padding-top: 10px; margin-top: 4px; }
-.bt { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600; text-decoration: none; border-radius: 6px; padding: 5px 11px; border: 1px solid var(--marinho); color: var(--sobre-marinho); background: var(--marinho); }
-.bt i { font-style: normal; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; opacity: 0.8; }
+.bt { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600; text-decoration: none; border-radius: 6px; padding: 5px 11px; border: 1px solid var(--linha); color: var(--tinta); background: var(--ficha); max-width: 100%; }
+.bt:hover { border-color: var(--marinho); }
+.bt.pncp { border-color: var(--marinho); color: var(--sobre-marinho); background: var(--marinho); }
+.bt.tr { border-color: var(--cafe); }
+.bt i { font-style: normal; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; color: var(--tinta-2); }
+.bt.pncp i { color: inherit; opacity: 0.8; }
+.outros { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .nota-tr { font-size: 0.8rem; color: var(--tinta-2); }
 details.mais { grid-column: 1 / -1; }
 details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--marinho); }
@@ -298,7 +303,7 @@ details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; co
           <div class="cartao"><h4>Mais perto de Itapeva ou de Curitiba</h4><ol class="ranking" id="ranking"></ol></div>
         </div>
       </div>
-      <p class="nota" id="nota-fonte">Fonte: Portal Nacional de Contratações Públicas (PNCP), busca de licitações com proposta aberta em SP e no PR feita em 25/11/2026 à noite (em 26/11 de manhã o PNCP estava fora do ar). Itens e preços máximos tirados do PNCP e dos dados abertos do Compras.gov; quando a ficha não mostra itens, eles estão no edital. As compras já feitas vêm dos dados abertos do Compras.gov (SP de janeiro a novembro de 2026, PR de agosto a novembro), que trazem só parte das prefeituras. Distâncias em linha reta, aproximadas; a estrada é maior. Ficaram de fora refeição diária, marmitex, buffet infantil e merenda. Antes de decidir, leia o edital: habilitação, cardápio, prazo de entrega e forma de pagamento estão lá.</p>
+      <p class="nota" id="nota-fonte">Fonte: Portal Nacional de Contratações Públicas (PNCP), busca de licitações com proposta aberta em SP e no PR feita em 25/11/2026 à noite (em 26/11 a busca do PNCP estava fora do ar). Itens, preços máximos e documentos (edital, termo de referência e anexos) tirados da API do PNCP em 26/11/2026; os documentos abrem direto no PNCP. As compras já feitas vêm dos dados abertos do Compras.gov (SP de janeiro a novembro de 2026, PR de agosto a novembro), que trazem só parte das prefeituras. Distâncias em linha reta, aproximadas; a estrada é maior. Ficaram de fora refeição diária, marmitex, buffet infantil e merenda. Antes de decidir, leia o edital: habilitação, cardápio, prazo de entrega e forma de pagamento estão lá.</p>
     </main>
   </div>
 </div>
@@ -415,7 +420,16 @@ function ficha(o) {
     <div class="tab-itens"><table><thead><tr><th>Item</th><th>Descrição</th><th>Qtd.</th><th>Unid.</th><th>Preço máx. unit.</th><th>Preço máx. total</th></tr></thead><tbody>
     ${o.itens.map((i) => `<tr><td class="n">${esc(i.n)}</td><td>${esc(i.d)}</td><td class="n">${qtd(i.q)}</td><td>${esc(i.u)}</td><td class="n">${din(i.vu)}</td><td class="n">${din(i.vt)}</td></tr>`).join("")}
     </tbody></table></div>` : "";
-  const mais = itens ? `<details class="mais"><summary>Itens e preços máximos</summary>${itens}</details>` : "";
+  const docs = o.docs || [];
+  const edital = docs.filter((x) => x.tipo === "Edital"), tr = docs.filter((x) => x.tipo === "TR"), anexos = docs.filter((x) => x.tipo === "Anexo");
+  const bt = (x, cls, rot) => `<a class="bt ${cls}" href="${esc(x.url)}" target="_blank" rel="noopener" title="${esc(x.titulo)}"><i>${rot}</i>${esc(curto(x.titulo))}</a>`;
+  const principais = [...edital.slice(0, 2).map((x) => bt(x, "", "EDITAL")), ...tr.slice(0, 2).map((x) => bt(x, "tr", "TR"))];
+  const extra = edital.slice(2).concat(tr.slice(2), anexos);
+  if (!principais.length && extra.length) principais.push(bt(extra.shift(), "", "DOC"));
+  const notaDocs = ehHist(o) ? "Edital e anexos na página do PNCP." : !docs.length ? "Edital e anexos na página do PNCP." : !tr.length ? "Termo de referência dentro do edital (anexo)." : "";
+  o._docsHtml = principais.join("") + (notaDocs ? `<span class="nota-tr">${notaDocs}</span>` : "");
+  const resumo = [itens ? "Itens e preços máximos" : "", extra.length ? extra.length + (extra.length === 1 ? " documento a mais" : " documentos a mais") : ""].filter(Boolean).join(" · ");
+  const mais = resumo ? `<details class="mais"><summary>${resumo}</summary>${itens}${extra.length ? `<div class="outros">${extra.map((x) => bt(x, "", x.tipo === "TR" ? "TR" : x.tipo === "Edital" ? "EDITAL" : "ANEXO")).join("")}</div>` : ""}</details>` : "";
   const valorRot = ehHist(o) ? (o.hom != null ? `estimado · saiu por ${brl(o.hom)}` : "estimado · sem homologação") : "valor estimado";
   return `<article class="ficha${o.grupo === "alvo" ? " alvo" : ""}${ehHist(o) ? " hist" : ""}">
     <div>
@@ -430,9 +444,13 @@ function ficha(o) {
       <div class="prazo ${pcls}">${ptxt}</div>
       <div class="quando">${fmtQuando(o)}</div>
     </div>
-    <div class="docs"><a class="bt" href="${esc(o.pncp)}" target="_blank" rel="noopener"><i>PNCP</i>Página da licitação</a><span class="nota-tr">Edital, termo de referência e anexos estão na página do PNCP.</span></div>
+    <div class="docs"><a class="bt pncp" href="${esc(o.pncp)}" target="_blank" rel="noopener"><i>PNCP</i>Página da licitação</a>${o._docsHtml}</div>
     ${mais}
   </article>`;
+}
+function curto(t) {
+  t = String(t || "Documento").replace(/^"|"$/g, "").replace(/\.(pdf|docx|zip)(\.pdf)?$/i, "").replace(/[_]+/g, " ").trim();
+  return t.length > 38 ? t.slice(0, 36) + "…" : (t || "Documento");
 }
 function cap(s) {
   s = String(s || "");
