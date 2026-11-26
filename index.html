@@ -339,7 +339,7 @@ const fmtQuando = (o) => {
 
 async function carregar() {
   try {
-    const [r1, r2] = await Promise.all([fetch("licitacoes.json"), fetch("mapa_sp_pr.json")]);
+    const [r1, r2] = await Promise.all([fetch("licitacoes.json", { cache: "no-cache" }), fetch("mapa_sp_pr.json")]);
     const d = await r1.json(); MAPA = await r2.json();
     L = d.licitacoes; ITAPEVA = d.itapeva; CURITIBA = d.curitiba;
     const g = new Date(d.gerado_em);
