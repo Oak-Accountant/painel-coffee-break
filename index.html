@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coffee Break nas Prefeituras</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: mesmo catálogo do painel de Natal, só que para coffee break, buffet e kit lanche.
+   Filtros à esquerda (no celular, no topo e recolhíveis); fichas com prazo, valor, distância de Itapeva e de Curitiba.
+   Paleta da Duarte Carvalho Consultoria (azul-marinho) com caramelo de café no lugar do dourado;
+   verde-pinheiro marca a região de Itapeva e azul-petróleo a região de Curitiba. */
+:root {
+  --papel: #f5f4f1;
+  --ficha: #ffffff;
+  --tinta: #1b2a3d;
+  --tinta-2: #5d6876;
+  --linha: #dcd8d1;
+  --marinho: #1b2a3d;
+  --marinho-claro: #e4e9f0;
+  --sobre-marinho: #ffffff;
+  --cafe: #8a4b1f;
+  --cafe-fundo: #f6e8dc;
+  --pinho: #1f6b4a;
+  --pinho-claro: #e1f1e8;
+  --petroleo: #1d5f78;
+  --petroleo-claro: #def0f6;
+  --alerta: #a3401a;
+  --alerta-claro: #fbe9e1;
+  --f-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --f-texto: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel: #14120f; --ficha: #1e1b17; --tinta: #ece8e2; --tinta-2: #a59d92; --linha: #34302a;
+    --marinho: #a9c0dc; --marinho-claro: #232c37; --sobre-marinho: #111418;
+    --cafe: #e3a46f; --cafe-fundo: #3a2719; --pinho: #6cc79a; --pinho-claro: #173327;
+    --petroleo: #74c3df; --petroleo-claro: #15303b; --alerta: #f29a6e; --alerta-claro: #3b2117;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --papel: #14120f; --ficha: #1e1b17; --tinta: #ece8e2; --tinta-2: #a59d92; --linha: #34302a;
+  --marinho: #a9c0dc; --marinho-claro: #232c37; --sobre-marinho: #111418;
+  --cafe: #e3a46f; --cafe-fundo: #3a2719; --pinho: #6cc79a; --pinho-claro: #173327;
+  --petroleo: #74c3df; --petroleo-claro: #15303b; --alerta: #f29a6e; --alerta-claro: #3b2117;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body {
+  margin: 0; background: var(--papel); color: var(--tinta);
+  font: 16px/1.45 var(--f-texto);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+a { color: var(--marinho); }
+:focus-visible { outline: 2px solid var(--cafe); outline-offset: 2px; }
+.casca { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+
+header { display: grid; gap: 14px; }
+.marca { display: flex; align-items: center; gap: 12px; color: var(--tinta-2); font-size: 0.9rem; }
+.selo { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--marinho); color: var(--sobre-marinho);
+  font: 800 0.95rem var(--f-display); box-shadow: inset 0 0 0 2px var(--cafe); flex: none; }
+.marca b { color: var(--tinta); font-weight: 700; }
+h1 { font: 800 clamp(1.8rem, 4.4vw, 2.6rem)/1.05 var(--f-display); margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--cafe); }
+.sub { color: var(--tinta-2); max-width: 72ch; margin: 0; }
+.placar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .placar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.num { background: var(--ficha); border: 1px solid var(--linha); border-radius: 10px; padding: 10px 14px; min-width: 0; }
+.num span { display: block; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--tinta-2); }
+.num b { display: block; font: 600 1.35rem/1.2 var(--f-num); font-variant-numeric: tabular-nums; margin-top: 2px; overflow-wrap: anywhere; }
+.num small { color: var(--tinta-2); font-size: 0.82rem; }
+.num.ita { box-shadow: inset 4px 0 0 var(--pinho); }
+.num.ctb { box-shadow: inset 4px 0 0 var(--petroleo); }
+
+.corpo { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 860px) { .corpo { grid-template-columns: minmax(0, 1fr); } }
+main { min-width: 0; }
+
+.filtros { background: var(--ficha); border: 1px solid var(--linha); border-radius: 10px; padding: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 860px) { .filtros { position: static; } }
+.filtros summary { font: 600 1.05rem var(--f-display); cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+.filtros summary::-webkit-details-marker { display: none; }
+.filtros summary::after { content: "▾"; color: var(--tinta-2); }
+.filtros[open] summary::after { content: "▴"; }
+.grade { display: grid; gap: 14px; margin-top: 12px; }
+.campo { display: grid; gap: 5px; }
+.campo > label, .campo > .rot { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--tinta-2); }
+input[type="search"], input[type="number"], select {
+  width: 100%; font: inherit; font-size: 0.95rem; color: var(--tinta); background: var(--papel);
+  border: 1px solid var(--linha); border-radius: 6px; padding: 7px 9px; min-width: 0;
+}
+.par { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips label { display: inline-flex; align-items: center; gap: 5px; font-size: 0.88rem; border: 1px solid var(--linha); border-radius: 999px; padding: 3px 10px; cursor: pointer; user-select: none; }
+.chips small { color: var(--tinta-2); font-family: var(--f-num); font-size: 0.72rem; }
+.chips input { accent-color: var(--marinho); margin: 0; }
+.chips label:has(input:checked) { background: var(--marinho-claro); border-color: var(--marinho); }
+input[type="range"] { width: 100%; accent-color: var(--marinho); }
+.valor-range { font-family: var(--f-num); font-size: 0.85rem; }
+.check { display: flex; align-items: flex-start; gap: 8px; font-size: 0.95rem; cursor: pointer; }
+.check input { accent-color: var(--marinho); width: 16px; height: 16px; margin: 3px 0 0; flex: none; }
+button { font: inherit; cursor: pointer; }
+.limpar { background: none; border: 1px solid var(--linha); color: var(--tinta-2); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; }
+
+.barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.esq { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.vistas { display: inline-flex; border: 1px solid var(--linha); border-radius: 8px; overflow: hidden; }
+.vistas button { background: var(--ficha); color: var(--tinta-2); border: 0; padding: 6px 14px; font-weight: 600; }
+.vistas button[aria-pressed="true"] { background: var(--marinho); color: var(--sobre-marinho); }
+.conta { font: 600 1.1rem var(--f-display); }
+.conta small { font: 400 0.9rem var(--f-texto); color: var(--tinta-2); }
+.ordem { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--tinta-2); }
+.ordem select { width: auto; }
+.cidade-sel { display: inline-flex; align-items: center; gap: 6px; background: var(--marinho-claro); border: 1px solid var(--marinho); border-radius: 999px; padding: 2px 4px 2px 12px; font-size: 0.9rem; font-weight: 600; }
+.cidade-sel button { background: none; border: 0; color: var(--tinta-2); font-size: 1rem; line-height: 1; padding: 2px 6px; }
+.lista { display: grid; gap: 10px; margin-top: 12px; }
+
+.ficha { background: var(--ficha); border: 1px solid var(--linha); border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 18px; }
+.ficha.alvo { border-color: var(--cafe); box-shadow: inset 4px 0 0 var(--cafe); }
+.ficha.hist { opacity: 0.88; }
+.ficha > div { min-width: 0; }
+.onde { font: 600 1.06rem/1.25 var(--f-texto); }
+.onde small { font-weight: 400; color: var(--tinta-2); font-size: 0.9rem; }
+.orgao { color: var(--tinta-2); font-size: 0.88rem; }
+.objeto { margin: 6px 0 0; font-size: 0.95rem; overflow-wrap: anywhere; text-wrap: pretty; }
+.nota-f { margin: 4px 0 0; font-size: 0.88rem; color: var(--cafe); }
+.etq { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.etq span { font-size: 0.78rem; border-radius: 4px; padding: 1px 7px; background: var(--papel); color: var(--tinta-2); border: 1px solid var(--linha); }
+.etq .reg { color: var(--pinho); background: var(--pinho-claro); border-color: transparent; font-weight: 700; }
+.etq .ctb { color: var(--petroleo); background: var(--petroleo-claro); border-color: transparent; font-weight: 700; }
+.etq .alv { color: var(--cafe); background: var(--cafe-fundo); border-color: transparent; font-weight: 700; }
+.lado-ficha { text-align: right; display: grid; gap: 4px; align-content: start; }
+.valor { font: 600 1.12rem var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.valor small { display: block; font: 400 0.75rem var(--f-texto); color: var(--tinta-2); }
+.prazo { justify-self: end; font: 600 0.85rem var(--f-num); border-radius: 4px; padding: 2px 8px; background: var(--papel); color: var(--tinta-2); white-space: nowrap; }
+.prazo.logo { background: var(--alerta-claro); color: var(--alerta); }
+.prazo.fim { text-decoration: line-through; }
+.quando { font-size: 0.85rem; color: var(--tinta-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.docs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-top: 1px dashed var(--linha); padding-top: 10px; margin-top: 4px; }
+.bt { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600; text-decoration: none; border-radius: 6px; padding: 5px 11px; border: 1px solid var(--marinho); color: var(--sobre-marinho); background: var(--marinho); }
+.bt i { font-style: normal; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; opacity: 0.8; }
+.nota-tr { font-size: 0.8rem; color: var(--tinta-2); }
+details.mais { grid-column: 1 / -1; }
+details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--marinho); }
+.tab-itens { overflow-x: auto; margin-top: 8px; }
+.tab-itens table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+.tab-itens th, .tab-itens td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+.tab-itens th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--tinta-2); }
+.tab-itens td.n { text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 560px) {
+  .ficha { grid-template-columns: minmax(0, 1fr); }
+  .lado-ficha { text-align: left; grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 10px; }
+  .prazo { justify-self: start; }
+}
+.vazio { padding: 28px; text-align: center; color: var(--tinta-2); background: var(--ficha); border: 1px dashed var(--linha); border-radius: 10px; }
+.nota { color: var(--tinta-2); font-size: 0.85rem; max-width: 78ch; margin-top: 20px; }
+
+.mapa { margin-top: 12px; display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .mapa { grid-template-columns: minmax(0, 1fr); } }
+.quadro { position: relative; background: var(--ficha); border: 1px solid var(--linha); border-radius: 10px; overflow: hidden; }
+.quadro svg { display: block; width: 100%; height: auto; touch-action: none; cursor: grab; user-select: none; }
+.quadro svg.arrastando { cursor: grabbing; }
+.quadro path { stroke: var(--linha); stroke-width: 0.5; vector-effect: non-scaling-stroke; fill: var(--papel); }
+.quadro path.b1, .legenda .lg1 { fill: color-mix(in srgb, var(--cafe) 30%, var(--ficha)); background: color-mix(in srgb, var(--cafe) 30%, var(--ficha)); }
+.quadro path.b2, .legenda .lg2 { fill: color-mix(in srgb, var(--cafe) 62%, var(--ficha)); background: color-mix(in srgb, var(--cafe) 62%, var(--ficha)); }
+.quadro path.b3, .legenda .lg3 { fill: var(--cafe); background: var(--cafe); }
+.legenda .lg0 { background: var(--papel); }
+.quadro path.sel { stroke: var(--marinho); stroke-width: 2.5; }
+.quadro path:hover { stroke: var(--tinta); stroke-width: 1.5; }
+.quadro circle.raio { fill: none; stroke-width: 1.4; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; pointer-events: none; }
+.quadro circle.raio.ita { stroke: var(--pinho); }
+.quadro circle.raio.ctb { stroke: var(--petroleo); }
+.quadro circle.casa { stroke: var(--ficha); stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none; }
+.quadro circle.casa.ita { fill: var(--pinho); }
+.quadro circle.casa.ctb { fill: var(--petroleo); }
+.quadro text.casa-t { font: 700 13px var(--f-texto); fill: var(--tinta); paint-order: stroke; stroke: var(--ficha); stroke-width: 3px; pointer-events: none; }
+.zoom { position: absolute; top: 10px; left: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.zoom button { background: var(--ficha); color: var(--tinta); border: 1px solid var(--linha); border-radius: 6px; padding: 4px 10px; font-size: 0.85rem; font-weight: 600; }
+.legenda { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 8px 12px; border-top: 1px solid var(--linha); font-size: 0.8rem; color: var(--tinta-2); }
+.legenda i { display: inline-block; width: 14px; height: 10px; border: 1px solid var(--linha); border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.legenda .lgi { border: 1px dashed var(--pinho); background: transparent; }
+.legenda .lgc { border: 1px dashed var(--petroleo); background: transparent; }
+.dica { position: absolute; pointer-events: none; background: var(--tinta); color: var(--papel); border-radius: 6px; padding: 6px 9px; font-size: 0.82rem; line-height: 1.35; white-space: nowrap; transform: translate(-50%, calc(-100% - 12px)); }
+.lado { display: grid; gap: 12px; }
+.cartao { background: var(--ficha); border: 1px solid var(--linha); border-radius: 10px; padding: 12px 14px; }
+.cartao h4 { margin: 0 0 6px; font: 600 0.98rem var(--f-display); }
+.cartao p { margin: 2px 0; font-size: 0.9rem; color: var(--tinta-2); }
+.cartao p b { color: var(--tinta); font-family: var(--f-num); font-weight: 500; }
+.cartao .ir { margin-top: 8px; background: var(--marinho); color: var(--sobre-marinho); border: 0; border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 0.88rem; }
+.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ranking button { width: 100%; display: flex; justify-content: space-between; gap: 8px; background: none; border: 0; border-radius: 4px; padding: 3px 4px; color: var(--tinta); font-size: 0.9rem; text-align: left; }
+.ranking button:hover { background: var(--marinho-claro); }
+.ranking small { font-family: var(--f-num); color: var(--tinta-2); white-space: nowrap; }
+@media (prefers-reduced-motion: no-preference) { .ficha { transition: border-color .15s; } .ficha:hover { border-color: var(--marinho); } }
+</style>
+
+</head>
+<body>
+<div class="casca">
+  <header>
+    <div class="marca"><div class="selo" aria-hidden="true">DC</div><div>Preparado por <b>Duarte Carvalho Consultoria</b> · <span id="coleta">PNCP</span></div></div>
+    <h1>Coffee break nas Prefeituras: licitações de <em>coffee break, buffet e lanches</em> perto de Itapeva e de Curitiba</h1>
+    <p class="sub">Licitações com proposta aberta em SP e no PR até 300 km de Itapeva, mais toda a região de Curitiba. Cada ficha traz prazo, valor, itens com preço máximo e a distância das duas cidades. Dá para ligar também as compras de 2026 já feitas, para ver por quanto saíram.</p>
+    <div class="placar" id="placar"></div>
+  </header>
+
+  <div class="corpo">
+    <details class="filtros" id="painel" open>
+      <summary>Filtros</summary>
+      <div class="grade">
+        <div class="campo">
+          <label for="f-busca">Cidade, órgão ou objeto</label>
+          <input type="search" id="f-busca" placeholder="ex.: coquetel, Sorocaba" autocomplete="off">
+        </div>
+        <div class="campo">
+          <span class="rot">Região</span>
+          <div class="chips" id="f-reg"></div>
+        </div>
+        <div class="campo">
+          <label for="f-km">Distância de Itapeva</label>
+          <input type="range" id="f-km" min="25" max="300" step="25" value="300">
+          <span class="valor-range" id="f-km-v">até 300 km</span>
+        </div>
+        <div class="campo">
+          <label for="f-kmc">Distância de Curitiba</label>
+          <input type="range" id="f-kmc" min="25" max="400" step="25" value="400">
+          <span class="valor-range" id="f-kmc-v">qualquer</span>
+        </div>
+        <div class="campo">
+          <span class="rot">Tipo</span>
+          <div class="chips" id="f-tipos"></div>
+        </div>
+        <div class="campo">
+          <span class="rot">Plataforma</span>
+          <div class="chips" id="f-plat"></div>
+        </div>
+        <div class="campo">
+          <span class="rot">Valor estimado (R$)</span>
+          <div class="par">
+            <input type="number" id="f-vmin" placeholder="de" min="0" step="10000" inputmode="numeric" aria-label="Valor estimado a partir de">
+            <input type="number" id="f-vmax" placeholder="até" min="0" step="10000" inputmode="numeric" aria-label="Valor estimado até">
+          </div>
+        </div>
+        <div class="campo">
+          <span class="rot">Prazo e histórico</span>
+          <label class="check"><input type="checkbox" id="f-abertas" checked> Esconder as encerradas</label>
+          <label class="check"><input type="checkbox" id="f-hist"> Mostrar as compras de coffee break de 2026 já feitas (referência de preço)</label>
+        </div>
+        <button type="button" class="limpar" id="limpar">Limpar filtros</button>
+      </div>
+    </details>
+
+    <main>
+      <div class="barra">
+        <div class="esq">
+          <div class="vistas" role="group" aria-label="Visualização">
+            <button type="button" id="v-lista" aria-pressed="true">Lista</button>
+            <button type="button" id="v-mapa" aria-pressed="false">Mapa</button>
+          </div>
+          <div class="conta" id="conta"></div>
+          <span class="cidade-sel" id="cidade-sel" hidden><span id="cidade-nome"></span><button type="button" id="cidade-x" aria-label="Tirar o filtro de cidade">✕</button></span>
+        </div>
+        <label class="ordem" for="f-ordem">Ordenar por
+          <select id="f-ordem">
+            <option value="prazo">Encerra primeiro</option>
+            <option value="perto">Mais perto de Itapeva</option>
+            <option value="pertoc">Mais perto de Curitiba</option>
+            <option value="maior">Maior valor</option>
+            <option value="menor">Menor valor</option>
+          </select>
+        </label>
+      </div>
+      <div class="lista" id="lista"><div class="vazio">Carregando as licitações…</div></div>
+      <div class="mapa" id="mapa" hidden>
+        <div class="quadro" id="quadro">
+          <svg id="svg" role="img" aria-label="Mapa de São Paulo e do Paraná com as licitações de coffee break por município"></svg>
+          <div class="zoom">
+            <button type="button" data-z="tudo">SP e PR</button>
+            <button type="button" data-z="itapeva">Itapeva</button>
+            <button type="button" data-z="curitiba">Curitiba</button>
+            <button type="button" data-z="+" aria-label="Aproximar">+</button>
+            <button type="button" data-z="-" aria-label="Afastar">−</button>
+          </div>
+          <div class="dica" id="dica" hidden></div>
+          <div class="legenda" id="legenda"></div>
+        </div>
+        <div class="lado">
+          <div class="cartao" id="info"></div>
+          <div class="cartao"><h4>Mais perto de Itapeva ou de Curitiba</h4><ol class="ranking" id="ranking"></ol></div>
+        </div>
+      </div>
+      <p class="nota" id="nota-fonte">Fonte: Portal Nacional de Contratações Públicas (PNCP), busca de licitações com proposta aberta em SP e no PR feita em 25/11/2026 à noite (em 26/11 de manhã o PNCP estava fora do ar). Itens e preços máximos tirados do PNCP e dos dados abertos do Compras.gov; quando a ficha não mostra itens, eles estão no edital. As compras já feitas vêm dos dados abertos do Compras.gov (SP de janeiro a novembro de 2026, PR de agosto a novembro), que trazem só parte das prefeituras. Distâncias em linha reta, aproximadas; a estrada é maior. Ficaram de fora refeição diária, marmitex, buffet infantil e merenda. Antes de decidir, leia o edital: habilitação, cardápio, prazo de entrega e forma de pagamento estão lá.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const semAcento = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const brl = (c) => c == null ? "sigiloso" : "R$ " + (c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const brlCurto = (c) => c >= 100000000 ? "R$ " + (c / 100000000).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " mi" : "R$ " + Math.round(c / 100000).toLocaleString("pt-BR") + " mil";
+const num = (s) => { const n = Number(s); return Number.isFinite(n) ? n : null; };
+const agora = new Date();
+const REGIOES = [["itapeva", "Itapeva e região"], ["curitiba", "Curitiba e região"], ["outras", "Outras cidades"]];
+let L = [], MAPA = null, ITAPEVA = null, CURITIBA = null, cidadeSel = null, vb = null, paths = [];
+const ehHist = (o) => o.grupo === "historico";
+const aberta = (o) => !ehHist(o) && new Date(o.enc) > agora;
+
+function prazoTxt(o) {
+  if (ehHist(o)) return ["já realizada", ""];
+  const ms = new Date(o.enc) - agora;
+  if (ms <= 0) return ["encerrada", "fim"];
+  const h = ms / 36e5;
+  if (h < 24) return ["faltam " + Math.max(1, Math.round(h)) + " h", "logo"];
+  const d = Math.floor(h / 24);
+  return ["faltam " + d + (d === 1 ? " dia" : " dias"), d <= 2 ? "logo" : ""];
+}
+const fmtQuando = (o) => {
+  const d = new Date(o.enc);
+  if (ehHist(o)) return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }) + " às " + o.hora;
+};
+
+async function carregar() {
+  try {
+    const [r1, r2] = await Promise.all([fetch("licitacoes.json"), fetch("mapa_sp_pr.json")]);
+    const d = await r1.json(); MAPA = await r2.json();
+    L = d.licitacoes; ITAPEVA = d.itapeva; CURITIBA = d.curitiba;
+    const g = new Date(d.gerado_em);
+    $("coleta").textContent = "PNCP, busca de " + g.toLocaleDateString("pt-BR") + " às " + g.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    preencher(); montarMapa(); restaurar(); aplicar();
+  } catch (e) {
+    $("lista").innerHTML = `<div class="vazio">Não deu para carregar os dados (${esc(e.message)}). Recarregue a página.</div>`;
+  }
+}
+
+function chips(el, campo, valores, rotulos) {
+  const cont = {}; L.filter((o) => !ehHist(o)).forEach((o) => { cont[o[campo]] = (cont[o[campo]] || 0) + 1; });
+  el.innerHTML = valores.map((v, i) => `<label><input type="checkbox" value="${esc(v)}" checked> ${esc(rotulos ? rotulos[i] : v)} <small>${cont[v] || 0}</small></label>`).join("");
+}
+function preencher() {
+  chips($("f-reg"), "regiao", REGIOES.map((r) => r[0]), REGIOES.map((r) => r[1]));
+  chips($("f-tipos"), "tipo", ["Coffee break / buffet", "Kit lanche e lanches"]);
+  const vivos = L.filter((o) => !ehHist(o));
+  const plats = [...new Set(L.map((o) => o.plataforma))].sort((a, b) => vivos.filter((o) => o.plataforma === b).length - vivos.filter((o) => o.plataforma === a).length);
+  chips($("f-plat"), "plataforma", plats);
+}
+function marcados(id) { return [...$(id).querySelectorAll("input:checked")].map((i) => i.value); }
+
+function filtros() {
+  const q = semAcento($("f-busca").value.trim());
+  const km = +$("f-km").value, kmc = +$("f-kmc").value;
+  const regs = marcados("f-reg"), tipos = marcados("f-tipos"), plats = marcados("f-plat");
+  const vmin = num($("f-vmin").value), vmax = num($("f-vmax").value);
+  const soAbertas = $("f-abertas").checked, hist = $("f-hist").checked;
+  return (o) => {
+    if (ehHist(o) && !hist) return false;
+    if (q && !semAcento(o.mun + " " + o.orgao + " " + o.objeto).includes(q)) return false;
+    if (!regs.includes(o.regiao)) return false;
+    if (km < 300 && o.km > km) return false;
+    if (kmc < 400 && o.kmc > kmc) return false;
+    if (!tipos.includes(o.tipo) || !plats.includes(o.plataforma)) return false;
+    if ($("f-vmin").value && (o.valor == null || o.valor < vmin * 100)) return false;
+    if ($("f-vmax").value && (o.valor == null || o.valor > vmax * 100)) return false;
+    if (soAbertas && !ehHist(o) && new Date(o.enc) <= agora) return false;
+    return true;
+  };
+}
+
+function placar() {
+  const ab = L.filter(aberta);
+  const soma = ab.reduce((s, o) => s + (o.valor || 0), 0);
+  const ita = ab.filter((o) => o.regiao === "itapeva"), ctb = ab.filter((o) => o.regiao === "curitiba");
+  const prox = ab.slice().sort((a, b) => a.enc.localeCompare(b.enc))[0];
+  const cb = ab.filter((o) => o.tipo === "Coffee break / buffet").length;
+  $("placar").innerHTML = `
+    <div class="num"><span>Abertas</span><b>${ab.length}</b><small>${cb} de coffee break ou buffet${prox ? " · a próxima fecha em " + esc(prox.mun) + ", " + fmtQuando(prox) : ""}</small></div>
+    <div class="num"><span>Valor estimado somado</span><b>${brlCurto(soma)}</b><small>${ab.filter((o) => o.valor == null).length} com valor sigiloso</small></div>
+    <div class="num ita"><span>Itapeva e região (até 150 km)</span><b>${ita.length}</b><small>${ita.length ? brlCurto(ita.reduce((s, o) => s + (o.valor || 0), 0)) : "nenhuma aberta"}</small></div>
+    <div class="num ctb"><span>Curitiba e região (até 100 km)</span><b>${ctb.length}</b><small>${ctb.length ? brlCurto(ctb.reduce((s, o) => s + (o.valor || 0), 0)) : "nenhuma aberta"}</small></div>`;
+}
+
+const ORDEM = {
+  prazo: (a, b) => (ehHist(a) - ehHist(b)) || (ehHist(a) ? b.enc.localeCompare(a.enc) : a.enc.localeCompare(b.enc)),
+  perto: (a, b) => a.km - b.km || a.enc.localeCompare(b.enc),
+  pertoc: (a, b) => a.kmc - b.kmc || a.enc.localeCompare(b.enc),
+  maior: (a, b) => (b.valor ?? -1) - (a.valor ?? -1),
+  menor: (a, b) => (a.valor ?? 9e15) - (b.valor ?? 9e15),
+};
+function distTxt(o) {
+  const a = o.km === 0 ? "em Itapeva" : `≈ ${o.km} km de Itapeva`;
+  const b = o.kmc === 0 ? "em Curitiba" : `≈ ${o.kmc} km de Curitiba`;
+  return `${a} · ${b}`;
+}
+function ficha(o) {
+  const [ptxt, pcls] = prazoTxt(o);
+  const tags = [];
+  if (o.grupo === "alvo") tags.push(`<span class="alv">Pedido do cliente</span>`);
+  if (o.regiao === "itapeva") tags.push(`<span class="reg">Região de Itapeva</span>`);
+  if (o.regiao === "curitiba") tags.push(`<span class="ctb">Região de Curitiba</span>`);
+  tags.push(`<span>${esc(o.tipo)}</span>`, `<span>${esc(o.modalidade)}</span>`, `<span>${esc(o.plataforma)}</span>`);
+  if (o.itens.length) tags.push(`<span>${o.itens.length} ${o.itens.length === 1 ? "item" : "itens"}</span>`);
+  const itens = o.itens.length ? `
+    <div class="tab-itens"><table><thead><tr><th>Item</th><th>Descrição</th><th>Qtd.</th><th>Unid.</th><th>Preço máx. unit.</th><th>Preço máx. total</th></tr></thead><tbody>
+    ${o.itens.map((i) => `<tr><td class="n">${esc(i.n)}</td><td>${esc(i.d)}</td><td class="n">${qtd(i.q)}</td><td>${esc(i.u)}</td><td class="n">${din(i.vu)}</td><td class="n">${din(i.vt)}</td></tr>`).join("")}
+    </tbody></table></div>` : "";
+  const mais = itens ? `<details class="mais"><summary>Itens e preços máximos</summary>${itens}</details>` : "";
+  const valorRot = ehHist(o) ? (o.hom != null ? `estimado · saiu por ${brl(o.hom)}` : "estimado · sem homologação") : "valor estimado";
+  return `<article class="ficha${o.grupo === "alvo" ? " alvo" : ""}${ehHist(o) ? " hist" : ""}">
+    <div>
+      <div class="onde">${esc(o.mun)}/${esc(o.uf)} <small>· ${distTxt(o)}</small></div>
+      <div class="orgao">${esc(cap(o.orgao))} · ${esc(o.edital)}</div>
+      <p class="objeto">${esc(cap(o.objeto))}</p>
+      ${o.nota ? `<p class="nota-f">${esc(o.nota)}</p>` : ""}
+      <div class="etq">${tags.join("")}</div>
+    </div>
+    <div class="lado-ficha">
+      <div class="valor">${brl(o.valor)}<small>${valorRot}</small></div>
+      <div class="prazo ${pcls}">${ptxt}</div>
+      <div class="quando">${fmtQuando(o)}</div>
+    </div>
+    <div class="docs"><a class="bt" href="${esc(o.pncp)}" target="_blank" rel="noopener"><i>PNCP</i>Página da licitação</a><span class="nota-tr">Edital, termo de referência e anexos estão na página do PNCP.</span></div>
+    ${mais}
+  </article>`;
+}
+function cap(s) {
+  s = String(s || "");
+  const letras = s.replace(/[^A-Za-zÀ-ú]/g, "");
+  if (letras && letras === letras.toUpperCase()) s = s.toLowerCase().replace(/(^|[.!?]\s+)([a-zà-ú])/g, (m, p, c) => p + c.toUpperCase());
+  return s;
+}
+const qtd = (q) => { const n = num(q); return n == null ? esc(q) : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
+const din = (v) => { const n = num(v); return n == null || v === "" ? "—" : "R$ " + n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+
+function aplicar() {
+  const base = L.filter(filtros());
+  placar();
+  const lista = (cidadeSel != null ? base.filter((o) => o.map === cidadeSel) : base).sort(ORDEM[$("f-ordem").value]);
+  const km = +$("f-km").value, kmc = +$("f-kmc").value;
+  $("f-km-v").textContent = "até " + km + " km";
+  $("f-kmc-v").textContent = kmc >= 400 ? "qualquer" : "até " + kmc + " km";
+  const nAb = lista.filter(aberta).length, nH = lista.filter(ehHist).length;
+  $("conta").innerHTML = `${lista.length} ${lista.length === 1 ? "licitação" : "licitações"} <small>${nAb} abertas${nH ? " · " + nH + " já feitas" : ""}</small>`;
+  $("cidade-sel").hidden = cidadeSel == null;
+  if (cidadeSel != null) $("cidade-nome").textContent = MAPA.m[cidadeSel][0] + "/" + MAPA.m[cidadeSel][4];
+  $("lista").innerHTML = lista.length ? lista.map(ficha).join("") : `<div class="vazio">Nenhuma licitação com esses filtros. Tente aumentar a distância, marcar outras regiões ou mostrar as encerradas.</div>`;
+  desenharMapa(base);
+  salvar();
+}
+
+/* mapa */
+const FAIXAS = [[1, "1"], [2, "2"], [3, "3 ou mais"]];
+let porMun = new Map();
+function marco(svg, i, cls, nome, raioKm) {
+  const [, , cx, cy] = MAPA.m[i];
+  const r = document.createElementNS(NS, "circle"); r.setAttribute("class", "raio " + cls); r.setAttribute("cx", cx); r.setAttribute("cy", cy); r.setAttribute("r", raioKm / MAPA.km_por_unidade); svg.appendChild(r);
+  const c = document.createElementNS(NS, "circle"); c.setAttribute("class", "casa " + cls); c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r", 5); svg.appendChild(c);
+  const t = document.createElementNS(NS, "text"); t.setAttribute("class", "casa-t"); t.setAttribute("x", cx + 8); t.setAttribute("y", cy + 4); t.textContent = nome; svg.appendChild(t);
+}
+function montarMapa() {
+  const svg = $("svg");
+  vb = [0, 0, MAPA.w, MAPA.h]; aplicarVB();
+  paths = MAPA.m.map(([, d], i) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.dataset.i = i; svg.appendChild(p); return p; });
+  marco(svg, ITAPEVA, "ita", "Itapeva", 150);
+  marco(svg, CURITIBA, "ctb", "Curitiba", 100);
+  $("legenda").innerHTML = `<span>Licitações por município:</span>` + FAIXAS.map(([, r], i) => `<span><i class="lg${i + 1}"></i>${r}</span>`).join("") + `<span><i class="lg0"></i>nenhuma</span><span><i class="lgi"></i>150 km de Itapeva</span><span><i class="lgc"></i>100 km de Curitiba</span>`;
+  $("info").innerHTML = "<h4>Escolha uma cidade</h4><p>Passe o mouse ou toque num município. As cores seguem os filtros ao lado.</p>";
+  ligarZoom(svg);
+}
+function desenharMapa(base) {
+  const g = new Map(); base.forEach((o) => { if (o.map != null) { if (!g.has(o.map)) g.set(o.map, []); g.get(o.map).push(o); } });
+  porMun = g;
+  paths.forEach((p, i) => { const n = g.has(i) ? g.get(i).length : 0; p.setAttribute("class", (n ? "b" + Math.min(n, 3) : "") + (i === cidadeSel ? " sel" : "")); });
+  const top = [...g].sort((a, b) => Math.min(a[1][0].km, a[1][0].kmc) - Math.min(b[1][0].km, b[1][0].kmc)).slice(0, 14);
+  $("ranking").innerHTML = top.length ? top.map(([i, l]) => `<li><button type="button" data-i="${i}">${esc(MAPA.m[i][0])}/${esc(MAPA.m[i][4])} <small>${l[0].km <= l[0].kmc ? l[0].km + " km de Itapeva" : l[0].kmc + " km de Curitiba"} · ${l.length}</small></button></li>`).join("") : `<li><small>Nenhuma com esses filtros.</small></li>`;
+  if (cidadeSel != null) mostrarInfo(cidadeSel);
+}
+function textoInfo(i) {
+  const l = porMun.get(i) || [];
+  const nome = esc(MAPA.m[i][0]) + "/" + esc(MAPA.m[i][4]);
+  if (!l.length) return `<h4>${nome}</h4><p>Nenhuma licitação com esses filtros.</p>`;
+  const soma = l.reduce((s, o) => s + (o.valor || 0), 0);
+  return `<h4>${nome}</h4><p><b>${l.length}</b> ${l.length === 1 ? "licitação" : "licitações"}</p><p>Valor somado: <b>${soma ? brl(soma) : "sigiloso"}</b></p><p>De Itapeva: <b>≈ ${l[0].km} km</b> · de Curitiba: <b>≈ ${l[0].kmc} km</b></p><button type="button" class="ir" data-i="${i}">Ver na lista</button>`;
+}
+function mostrarInfo(i) { $("info").innerHTML = textoInfo(i); }
+function escolher(i) { cidadeSel = i; trocarVista("lista"); aplicar(); }
+function aplicarVB() { $("svg").setAttribute("viewBox", vb.map((v) => v.toFixed(1)).join(" ")); }
+function zoomEm(cx, cy, f) { const w = Math.min(MAPA.w, Math.max(40, vb[2] * f)), h = w * MAPA.h / MAPA.w; vb = [cx - (cx - vb[0]) * w / vb[2], cy - (cy - vb[1]) * h / vb[3], w, h]; aplicarVB(); }
+function centrarEm(i, w) { const [, , cx, cy] = MAPA.m[i]; const h = w * MAPA.h / MAPA.w; vb = [cx - w / 2, cy - h / 2, w, h]; aplicarVB(); }
+function ponto(svg, ev) { const r = svg.getBoundingClientRect(); return [vb[0] + (ev.clientX - r.left) / r.width * vb[2], vb[1] + (ev.clientY - r.top) / r.height * vb[3]]; }
+function ligarZoom(svg) {
+  let arr = null, moveu = false;
+  svg.addEventListener("wheel", (ev) => { ev.preventDefault(); const [x, y] = ponto(svg, ev); zoomEm(x, y, ev.deltaY > 0 ? 1.2 : 1 / 1.2); }, { passive: false });
+  svg.addEventListener("pointerdown", (ev) => { arr = [ev.clientX, ev.clientY, vb[0], vb[1]]; moveu = false; svg.setPointerCapture(ev.pointerId); });
+  svg.addEventListener("pointermove", (ev) => {
+    if (arr) {
+      const r = svg.getBoundingClientRect(), dx = ev.clientX - arr[0], dy = ev.clientY - arr[1];
+      if (Math.abs(dx) + Math.abs(dy) > 4) { moveu = true; svg.classList.add("arrastando"); }
+      if (moveu) { vb[0] = arr[2] - dx / r.width * vb[2]; vb[1] = arr[3] - dy / r.height * vb[3]; aplicarVB(); }
+      return;
+    }
+    const p = ev.target.closest("path"), dica = $("dica");
+    if (!p) { dica.hidden = true; return; }
+    const i = +p.dataset.i, n = porMun.has(i) ? porMun.get(i).length : 0, q = $("quadro").getBoundingClientRect();
+    dica.textContent = `${MAPA.m[i][0]}/${MAPA.m[i][4]}: ${n || "nenhuma"}${n ? (n === 1 ? " licitação" : " licitações") : ""}`;
+    dica.style.left = ev.clientX - q.left + "px"; dica.style.top = ev.clientY - q.top + "px"; dica.hidden = false;
+    if (n) mostrarInfo(i);
+  });
+  svg.addEventListener("pointerleave", () => { $("dica").hidden = true; });
+  svg.addEventListener("pointerup", (ev) => {
+    svg.classList.remove("arrastando");
+    if (!moveu) { const p = document.elementFromPoint(ev.clientX, ev.clientY)?.closest("path"); if (p) { const i = +p.dataset.i; mostrarInfo(i); paths.forEach((x) => x.classList.toggle("sel", +x.dataset.i === i)); } }
+    arr = null;
+  });
+  document.querySelectorAll(".zoom button").forEach((b) => b.addEventListener("click", () => {
+    const z = b.dataset.z;
+    if (z === "tudo") { vb = [0, 0, MAPA.w, MAPA.h]; aplicarVB(); }
+    else if (z === "itapeva") centrarEm(ITAPEVA, 420);
+    else if (z === "curitiba") centrarEm(CURITIBA, 320);
+    else zoomEm(vb[0] + vb[2] / 2, vb[1] + vb[3] / 2, z === "+" ? 1 / 1.4 : 1.4);
+  }));
+}
+function trocarVista(v) {
+  $("v-lista").setAttribute("aria-pressed", v === "lista"); $("v-mapa").setAttribute("aria-pressed", v === "mapa");
+  $("lista").hidden = v !== "lista"; $("mapa").hidden = v !== "mapa";
+}
+
+/* memória do filtro só neste navegador */
+const IDS = ["f-busca", "f-km", "f-kmc", "f-vmin", "f-vmax", "f-abertas", "f-hist", "f-ordem"];
+function salvar() { try { localStorage.setItem("coffee-filtros", JSON.stringify(Object.fromEntries(IDS.map((id) => [id, $(id).type === "checkbox" ? $(id).checked : $(id).value])))); } catch (e) {} }
+function restaurar() { try { const s = JSON.parse(localStorage.getItem("coffee-filtros") || "{}"); IDS.forEach((id) => { if (id in s) { if ($(id).type === "checkbox") $(id).checked = s[id]; else $(id).value = s[id]; } }); } catch (e) {} }
+
+document.addEventListener("input", (ev) => { if (ev.target.closest(".filtros") || ev.target.id === "f-ordem") aplicar(); });
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-i]");
+  if (b && (b.classList.contains("ir") || b.closest(".ranking"))) escolher(+b.dataset.i);
+});
+$("v-lista").addEventListener("click", () => trocarVista("lista"));
+$("v-mapa").addEventListener("click", () => trocarVista("mapa"));
+$("cidade-x").addEventListener("click", () => { cidadeSel = null; aplicar(); });
+$("limpar").addEventListener("click", () => {
+  $("f-busca").value = ""; $("f-km").value = 300; $("f-kmc").value = 400; $("f-vmin").value = ""; $("f-vmax").value = ""; $("f-abertas").checked = true; $("f-hist").checked = false;
+  document.querySelectorAll(".chips input").forEach((i) => { i.checked = true; }); cidadeSel = null; aplicar();
+});
+if (matchMedia("(max-width: 860px)").matches) $("painel").open = false;
+carregar();
+</script>
+
+</body>
+</html>
