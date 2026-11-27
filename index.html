@@ -213,8 +213,8 @@ details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; co
 <div class="casca">
   <header>
     <div class="marca"><div class="selo" aria-hidden="true">DC</div><div>Preparado por <b>Duarte Carvalho Consultoria</b> · <span id="coleta">PNCP</span></div></div>
-    <h1>Coffee break nas Prefeituras: licitações de <em>coffee break, buffet e lanches</em> perto de Itapeva e de Curitiba</h1>
-    <p class="sub">Licitações com proposta aberta em SP e no PR até 300 km de Itapeva, mais toda a região de Curitiba. Cada ficha traz prazo, valor, itens com preço máximo e a distância das duas cidades. Dá para ligar também as compras de 2026 já feitas, para ver por quanto saíram.</p>
+    <h1>Coffee break nas Prefeituras: licitações de <em>coffee break, buffet e lanches</em> perto de Itapeva</h1>
+    <p class="sub">Licitações com proposta aberta em SP e no PR até 300 km de Itapeva, que é o ponto de saída de todas as distâncias. As da região de Curitiba também aparecem (dá para esconder nos filtros), mas Curitiba não conta como ponto de saída. Cada ficha traz prazo, valor, itens com preço máximo e a distância de Itapeva. Dá para ligar também as compras de 2026 já feitas, para ver por quanto saíram.</p>
     <div class="placar" id="placar"></div>
   </header>
 
@@ -229,16 +229,12 @@ details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; co
         <div class="campo">
           <span class="rot">Região</span>
           <div class="chips" id="f-reg"></div>
+          <label class="check"><input type="checkbox" id="f-ctb" checked> Mostrar as licitações da região de Curitiba <small id="f-ctb-n"></small></label>
         </div>
         <div class="campo">
-          <label for="f-km">Distância de Itapeva</label>
+          <label for="f-km">Distância de Itapeva (ponto de saída)</label>
           <input type="range" id="f-km" min="25" max="300" step="25" value="300">
           <span class="valor-range" id="f-km-v">até 300 km</span>
-        </div>
-        <div class="campo">
-          <label for="f-kmc">Distância de Curitiba</label>
-          <input type="range" id="f-kmc" min="25" max="400" step="25" value="400">
-          <span class="valor-range" id="f-kmc-v">qualquer</span>
         </div>
         <div class="campo">
           <span class="rot">Tipo</span>
@@ -278,7 +274,6 @@ details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; co
           <select id="f-ordem">
             <option value="prazo">Encerra primeiro</option>
             <option value="perto">Mais perto de Itapeva</option>
-            <option value="pertoc">Mais perto de Curitiba</option>
             <option value="maior">Maior valor</option>
             <option value="menor">Menor valor</option>
           </select>
@@ -300,7 +295,7 @@ details.mais summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; co
         </div>
         <div class="lado">
           <div class="cartao" id="info"></div>
-          <div class="cartao"><h4>Mais perto de Itapeva ou de Curitiba</h4><ol class="ranking" id="ranking"></ol></div>
+          <div class="cartao"><h4>Mais perto de Itapeva</h4><ol class="ranking" id="ranking"></ol></div>
         </div>
       </div>
       <p class="nota" id="nota-fonte">Fonte: Portal Nacional de Contratações Públicas (PNCP), busca de licitações com proposta aberta em SP e no PR feita em 25/11/2026 à noite (em 26/11 a busca do PNCP estava fora do ar). Itens, preços máximos e documentos (edital, termo de referência e anexos) tirados da API do PNCP em 26/11/2026; os documentos abrem direto no PNCP. As compras já feitas vêm dos dados abertos do Compras.gov (SP de janeiro a novembro de 2026, PR de agosto a novembro), que trazem só parte das prefeituras. Distâncias em linha reta, aproximadas; a estrada é maior. Ficaram de fora refeição diária, marmitex, buffet infantil e merenda. Antes de decidir, leia o edital: habilitação, cardápio, prazo de entrega e forma de pagamento estão lá.</p>
@@ -317,7 +312,9 @@ const brl = (c) => c == null ? "sigiloso" : "R$ " + (c / 100).toLocaleString("pt
 const brlCurto = (c) => c >= 100000000 ? "R$ " + (c / 100000000).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " mi" : "R$ " + Math.round(c / 100000).toLocaleString("pt-BR") + " mil";
 const num = (s) => { const n = Number(s); return Number.isFinite(n) ? n : null; };
 const agora = new Date();
-const REGIOES = [["itapeva", "Itapeva e região"], ["curitiba", "Curitiba e região"], ["outras", "Outras cidades"]];
+const REGIOES = [["itapeva", "Itapeva e região"], ["outras", "Outras cidades"]];
+const verCtb = () => $("f-ctb").checked;
+const naVista = (o) => o.regiao !== "curitiba" || verCtb();
 let L = [], MAPA = null, ITAPEVA = null, CURITIBA = null, cidadeSel = null, vb = null, paths = [];
 const ehHist = (o) => o.grupo === "historico";
 const aberta = (o) => !ehHist(o) && new Date(o.enc) > agora;
@@ -341,7 +338,9 @@ async function carregar() {
   try {
     const [r1, r2] = await Promise.all([fetch("licitacoes.json", { cache: "no-cache" }), fetch("mapa_sp_pr.json")]);
     const d = await r1.json(); MAPA = await r2.json();
-    L = d.licitacoes; ITAPEVA = d.itapeva; CURITIBA = d.curitiba;
+    L = [].concat(d.licitacoes || []); ITAPEVA = d.itapeva; CURITIBA = d.curitiba;
+    // o arquivo diário às vezes traz um documento ou item só como objeto, não como lista
+    L.forEach((o) => { o.docs = [].concat(o.docs || []); o.itens = [].concat(o.itens || []); });
     const g = new Date(d.gerado_em);
     $("coleta").textContent = "PNCP, busca de " + g.toLocaleDateString("pt-BR") + " às " + g.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
     preencher(); montarMapa(); restaurar(); aplicar();
@@ -360,21 +359,25 @@ function preencher() {
   const vivos = L.filter((o) => !ehHist(o));
   const plats = [...new Set(L.map((o) => o.plataforma))].sort((a, b) => vivos.filter((o) => o.plataforma === b).length - vivos.filter((o) => o.plataforma === a).length);
   chips($("f-plat"), "plataforma", plats);
+  $("f-ctb-n").textContent = vivos.filter((o) => o.regiao === "curitiba").length;
 }
 function marcados(id) { return [...$(id).querySelectorAll("input:checked")].map((i) => i.value); }
 
 function filtros() {
   const q = semAcento($("f-busca").value.trim());
-  const km = +$("f-km").value, kmc = +$("f-kmc").value;
+  const km = +$("f-km").value;
   const regs = marcados("f-reg"), tipos = marcados("f-tipos"), plats = marcados("f-plat");
   const vmin = num($("f-vmin").value), vmax = num($("f-vmax").value);
   const soAbertas = $("f-abertas").checked, hist = $("f-hist").checked;
   return (o) => {
     if (ehHist(o) && !hist) return false;
     if (q && !semAcento(o.mun + " " + o.orgao + " " + o.objeto).includes(q)) return false;
-    if (!regs.includes(o.regiao)) return false;
-    if (km < 300 && o.km > km) return false;
-    if (kmc < 400 && o.kmc > kmc) return false;
+    // Curitiba não é ponto de saída: as da região dela entram ou saem só pela opção "Mostrar as licitações da região de Curitiba"
+    if (o.regiao === "curitiba") { if (!verCtb()) return false; }
+    else {
+      if (!regs.includes(o.regiao)) return false;
+      if (km < 300 && o.km > km) return false;
+    }
     if (!tipos.includes(o.tipo) || !plats.includes(o.plataforma)) return false;
     if ($("f-vmin").value && (o.valor == null || o.valor < vmin * 100)) return false;
     if ($("f-vmax").value && (o.valor == null || o.valor > vmax * 100)) return false;
@@ -384,7 +387,7 @@ function filtros() {
 }
 
 function placar() {
-  const ab = L.filter(aberta);
+  const ab = L.filter((o) => aberta(o) && naVista(o));
   const soma = ab.reduce((s, o) => s + (o.valor || 0), 0);
   const ita = ab.filter((o) => o.regiao === "itapeva"), ctb = ab.filter((o) => o.regiao === "curitiba");
   const prox = ab.slice().sort((a, b) => a.enc.localeCompare(b.enc))[0];
@@ -393,20 +396,17 @@ function placar() {
     <div class="num"><span>Abertas</span><b>${ab.length}</b><small>${cb} de coffee break ou buffet${prox ? " · a próxima fecha em " + esc(prox.mun) + ", " + fmtQuando(prox) : ""}</small></div>
     <div class="num"><span>Valor estimado somado</span><b>${brlCurto(soma)}</b><small>${ab.filter((o) => o.valor == null).length} com valor sigiloso</small></div>
     <div class="num ita"><span>Itapeva e região (até 150 km)</span><b>${ita.length}</b><small>${ita.length ? brlCurto(ita.reduce((s, o) => s + (o.valor || 0), 0)) : "nenhuma aberta"}</small></div>
-    <div class="num ctb"><span>Curitiba e região (até 100 km)</span><b>${ctb.length}</b><small>${ctb.length ? brlCurto(ctb.reduce((s, o) => s + (o.valor || 0), 0)) : "nenhuma aberta"}</small></div>`;
+    <div class="num ctb"><span>Região de Curitiba (não é ponto de saída)</span><b>${verCtb() ? ctb.length : "—"}</b><small>${!verCtb() ? "escondidas nos filtros" : ctb.length ? brlCurto(ctb.reduce((s, o) => s + (o.valor || 0), 0)) : "nenhuma aberta"}</small></div>`;
 }
 
 const ORDEM = {
   prazo: (a, b) => (ehHist(a) - ehHist(b)) || (ehHist(a) ? b.enc.localeCompare(a.enc) : a.enc.localeCompare(b.enc)),
   perto: (a, b) => a.km - b.km || a.enc.localeCompare(b.enc),
-  pertoc: (a, b) => a.kmc - b.kmc || a.enc.localeCompare(b.enc),
   maior: (a, b) => (b.valor ?? -1) - (a.valor ?? -1),
   menor: (a, b) => (a.valor ?? 9e15) - (b.valor ?? 9e15),
 };
 function distTxt(o) {
-  const a = o.km === 0 ? "em Itapeva" : `≈ ${o.km} km de Itapeva`;
-  const b = o.kmc === 0 ? "em Curitiba" : `≈ ${o.kmc} km de Curitiba`;
-  return `${a} · ${b}`;
+  return o.km === 0 ? "em Itapeva" : `≈ ${o.km} km de Itapeva`;
 }
 function ficha(o) {
   const [ptxt, pcls] = prazoTxt(o);
@@ -464,10 +464,9 @@ const din = (v) => { const n = num(v); return n == null || v === "" ? "—" : "R
 function aplicar() {
   const base = L.filter(filtros());
   placar();
-  const lista = (cidadeSel != null ? base.filter((o) => o.map === cidadeSel) : base).sort(ORDEM[$("f-ordem").value]);
-  const km = +$("f-km").value, kmc = +$("f-kmc").value;
-  $("f-km-v").textContent = "até " + km + " km";
-  $("f-kmc-v").textContent = kmc >= 400 ? "qualquer" : "até " + kmc + " km";
+  const lista = (cidadeSel != null ? base.filter((o) => o.map === cidadeSel) : base).sort(ORDEM[$("f-ordem").value] || ORDEM.prazo);
+  const km = +$("f-km").value;
+  $("f-km-v").textContent = "até " + km + " km" + (verCtb() ? " (a região de Curitiba aparece à parte)" : "");
   const nAb = lista.filter(aberta).length, nH = lista.filter(ehHist).length;
   $("conta").innerHTML = `${lista.length} ${lista.length === 1 ? "licitação" : "licitações"} <small>${nAb} abertas${nH ? " · " + nH + " já feitas" : ""}</small>`;
   $("cidade-sel").hidden = cidadeSel == null;
@@ -491,8 +490,7 @@ function montarMapa() {
   vb = [0, 0, MAPA.w, MAPA.h]; aplicarVB();
   paths = MAPA.m.map(([, d], i) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.dataset.i = i; svg.appendChild(p); return p; });
   marco(svg, ITAPEVA, "ita", "Itapeva", 150);
-  marco(svg, CURITIBA, "ctb", "Curitiba", 100);
-  $("legenda").innerHTML = `<span>Licitações por município:</span>` + FAIXAS.map(([, r], i) => `<span><i class="lg${i + 1}"></i>${r}</span>`).join("") + `<span><i class="lg0"></i>nenhuma</span><span><i class="lgi"></i>150 km de Itapeva</span><span><i class="lgc"></i>100 km de Curitiba</span>`;
+  $("legenda").innerHTML = `<span>Licitações por município:</span>` + FAIXAS.map(([, r], i) => `<span><i class="lg${i + 1}"></i>${r}</span>`).join("") + `<span><i class="lg0"></i>nenhuma</span><span><i class="lgi"></i>150 km de Itapeva</span>`;
   $("info").innerHTML = "<h4>Escolha uma cidade</h4><p>Passe o mouse ou toque num município. As cores seguem os filtros ao lado.</p>";
   ligarZoom(svg);
 }
@@ -500,8 +498,8 @@ function desenharMapa(base) {
   const g = new Map(); base.forEach((o) => { if (o.map != null) { if (!g.has(o.map)) g.set(o.map, []); g.get(o.map).push(o); } });
   porMun = g;
   paths.forEach((p, i) => { const n = g.has(i) ? g.get(i).length : 0; p.setAttribute("class", (n ? "b" + Math.min(n, 3) : "") + (i === cidadeSel ? " sel" : "")); });
-  const top = [...g].sort((a, b) => Math.min(a[1][0].km, a[1][0].kmc) - Math.min(b[1][0].km, b[1][0].kmc)).slice(0, 14);
-  $("ranking").innerHTML = top.length ? top.map(([i, l]) => `<li><button type="button" data-i="${i}">${esc(MAPA.m[i][0])}/${esc(MAPA.m[i][4])} <small>${l[0].km <= l[0].kmc ? l[0].km + " km de Itapeva" : l[0].kmc + " km de Curitiba"} · ${l.length}</small></button></li>`).join("") : `<li><small>Nenhuma com esses filtros.</small></li>`;
+  const top = [...g].sort((a, b) => a[1][0].km - b[1][0].km).slice(0, 14);
+  $("ranking").innerHTML = top.length ? top.map(([i, l]) => `<li><button type="button" data-i="${i}">${esc(MAPA.m[i][0])}/${esc(MAPA.m[i][4])} <small>${l[0].km} km de Itapeva · ${l.length}</small></button></li>`).join("") : `<li><small>Nenhuma com esses filtros.</small></li>`;
   if (cidadeSel != null) mostrarInfo(cidadeSel);
 }
 function textoInfo(i) {
@@ -509,7 +507,7 @@ function textoInfo(i) {
   const nome = esc(MAPA.m[i][0]) + "/" + esc(MAPA.m[i][4]);
   if (!l.length) return `<h4>${nome}</h4><p>Nenhuma licitação com esses filtros.</p>`;
   const soma = l.reduce((s, o) => s + (o.valor || 0), 0);
-  return `<h4>${nome}</h4><p><b>${l.length}</b> ${l.length === 1 ? "licitação" : "licitações"}</p><p>Valor somado: <b>${soma ? brl(soma) : "sigiloso"}</b></p><p>De Itapeva: <b>≈ ${l[0].km} km</b> · de Curitiba: <b>≈ ${l[0].kmc} km</b></p><button type="button" class="ir" data-i="${i}">Ver na lista</button>`;
+  return `<h4>${nome}</h4><p><b>${l.length}</b> ${l.length === 1 ? "licitação" : "licitações"}</p><p>Valor somado: <b>${soma ? brl(soma) : "sigiloso"}</b></p><p>De Itapeva: <b>≈ ${l[0].km} km</b></p><button type="button" class="ir" data-i="${i}">Ver na lista</button>`;
 }
 function mostrarInfo(i) { $("info").innerHTML = textoInfo(i); }
 function escolher(i) { cidadeSel = i; trocarVista("lista"); aplicar(); }
@@ -555,7 +553,7 @@ function trocarVista(v) {
 }
 
 /* memória do filtro só neste navegador */
-const IDS = ["f-busca", "f-km", "f-kmc", "f-vmin", "f-vmax", "f-abertas", "f-hist", "f-ordem"];
+const IDS = ["f-busca", "f-km", "f-ctb", "f-vmin", "f-vmax", "f-abertas", "f-hist", "f-ordem"];
 function salvar() { try { localStorage.setItem("coffee-filtros", JSON.stringify(Object.fromEntries(IDS.map((id) => [id, $(id).type === "checkbox" ? $(id).checked : $(id).value])))); } catch (e) {} }
 function restaurar() { try { const s = JSON.parse(localStorage.getItem("coffee-filtros") || "{}"); IDS.forEach((id) => { if (id in s) { if ($(id).type === "checkbox") $(id).checked = s[id]; else $(id).value = s[id]; } }); } catch (e) {} }
 
@@ -568,7 +566,7 @@ $("v-lista").addEventListener("click", () => trocarVista("lista"));
 $("v-mapa").addEventListener("click", () => trocarVista("mapa"));
 $("cidade-x").addEventListener("click", () => { cidadeSel = null; aplicar(); });
 $("limpar").addEventListener("click", () => {
-  $("f-busca").value = ""; $("f-km").value = 300; $("f-kmc").value = 400; $("f-vmin").value = ""; $("f-vmax").value = ""; $("f-abertas").checked = true; $("f-hist").checked = false;
+  $("f-busca").value = ""; $("f-km").value = 300; $("f-ctb").checked = true; $("f-vmin").value = ""; $("f-vmax").value = ""; $("f-abertas").checked = true; $("f-hist").checked = false;
   document.querySelectorAll(".chips input").forEach((i) => { i.checked = true; }); cidadeSel = null; aplicar();
 });
 if (matchMedia("(max-width: 860px)").matches) $("painel").open = false;
